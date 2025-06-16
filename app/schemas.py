@@ -35,7 +35,7 @@ class Student(StudentBase):
     id: int
 
     class Config:
-        orm_mode = True
+        from_attributes = True
         
 class StudentUpdate(StudentBase):
     pass 
@@ -52,7 +52,7 @@ class Supervisor(SupervisorBase):
     id: int
 
     class Config:
-        orm_mode = True
+        from_attributes = True
         
 class SupervisorUpdate(SupervisorBase):
     pass
@@ -69,7 +69,7 @@ class MemoryMaster(MemoryMasterBase):
     id: int
 
     class Config:
-        orm_mode = True
+        from_attributes = True
         
 class MemoryMasterUpdate(MemoryMasterBase):
     pass

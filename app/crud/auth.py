@@ -6,7 +6,7 @@ from dotenv import load_dotenv
 import jwt
 
 from schemas import Student, StudentLogin, StudentCreate
-from fastapi import Request, HTTPException
+from fastapi import Request, HTTPException, Depends
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 
 load_dotenv()
@@ -65,5 +65,13 @@ class JWTBearer(HTTPBearer):
 
         return isTokenValid
 
-
+def get_current_user_id(token: str = Depends(JWTBearer())):
+    try:
+        payload = jwt.decode(token, JWT_SECRET, algorithms=[JWT_ALGORITHM])
+        user_id: int = payload.get("user_id")
+        if user_id is None:
+            raise HTTPException(status_code=401, detail="Identifiant non trouvé dans le token")
+        return int(user_id)
+    except jwt.PyJWTError:
+        raise HTTPException(status_code=403, detail="Token invalide")
     

@@ -29,7 +29,14 @@ def login_student(student: StudentLogin, db: Session = Depends(get_db)):
     response = students.login(db, student)
     if response is None:
         raise HTTPException(status_code=400, detail="Invalid email or password")
-    return auth.sign_jwt(response.email)
+    return auth.sign_jwt(response.id)
+
+@router.get("/students/me", response_model=Student, tags=["User Registration"])
+def get_my_profile(db: Session = Depends(get_db),student_id: int = Depends(auth.get_current_user_id)):
+    student = students.get(db, student_id)
+    if student is None:
+        raise HTTPException(status_code=404, detail="Student not found")
+    return student
         
 @router.get("/students/", response_model=list[Student], dependencies=[Depends(JWTBearer())], tags=["Students"])
 def get_all_students(skip: int = 0, limit: int = 10, db: Session = Depends(get_db)):
@@ -55,22 +62,22 @@ def delete_student(student_id: int, db: Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail="Student not found")
     return response
 
-@router.post("/students/{student_id}/choose_supervisor/{supervisor_id}", response_model=Student, dependencies=[Depends(JWTBearer())], tags=["Students"])
-def choose_supervisor(student_id: int, supervisor_id: int, db: Session = Depends(get_db)):
+@router.post("/students/me/choose_supervisor/{supervisor_id}", response_model=Student, dependencies=[Depends(JWTBearer())], tags=["Students"])
+def choose_supervisor(supervisor_id: int, student_id: int = Depends(auth.get_current_user_id), db: Session = Depends(get_db)):
     response = students.choose_supervisor(db, student_id, supervisor_id)
     if response is None:
         raise HTTPException(status_code=404, detail="Student or Supervisor not found")
     return response
 
-@router.post("/students/{student_id}/choose_memory_master/{memory_master_id}", response_model=Student, dependencies=[Depends(JWTBearer())], tags=["Students"])
-def choose_memory_master(student_id: int, memory_master_id: int, db: Session = Depends(get_db)):
+@router.post("/students/me/choose_memory_master/{memory_master_id}", response_model=Student, dependencies=[Depends(JWTBearer())], tags=["Students"])
+def choose_memory_master(memory_master_id: int, student_id: int = Depends(auth.get_current_user_id), db: Session = Depends(get_db)):
     response = students.choose_memory_master(db, student_id, memory_master_id)
     if response is None:
         raise HTTPException(status_code=404, detail="Student or Memory Master not found")
     return response
 
-@router.put("/students/{student_id}/change_memory_master/{memory_master_id}", response_model=Student, dependencies=[Depends(JWTBearer())], tags=["Students"])
-def change_memory_master(student_id: int, memory_master_id: int, db: Session = Depends(get_db)):
+@router.put("/students/me/change_memory_master/{memory_master_id}", response_model=Student, dependencies=[Depends(JWTBearer())], tags=["Students"])
+def change_memory_master(memory_master_id: int, student_id: int = Depends(auth.get_current_user_id), db: Session = Depends(get_db)):
     response = students.change_memory_master(db, student_id, memory_master_id)
     if response is None:
         raise HTTPException(status_code=404, detail="Student or Memory Master not found")
@@ -138,4 +145,26 @@ def delete_memory_master(memory_master_id: int, db: Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail="Memory Master not found")
     return response
 
+
+# Admin routes for choosing supervisors and memory masters to a student
+# @router.post("/students/{student_id}/choose_supervisor/{supervisor_id}", response_model=Student, dependencies=[Depends(JWTBearer())], tags=["Admin"])
+# def choose_supervisor(student_id: int, supervisor_id: int, db: Session = Depends(get_db)):
+#     response = students.choose_supervisor(db, student_id, supervisor_id)
+#     if response is None:
+#         raise HTTPException(status_code=404, detail="Student or Supervisor not found")
+#     return response
+
+# @router.post("/students/{student_id}/choose_memory_master/{memory_master_id}", response_model=Student, dependencies=[Depends(JWTBearer())], tags=["Admin"])
+# def choose_memory_master(student_id: int, memory_master_id: int, db: Session = Depends(get_db)):
+#     response = students.choose_memory_master(db, student_id, memory_master_id)
+#     if response is None:
+#         raise HTTPException(status_code=404, detail="Student or Memory Master not found")
+#     return response
+
+# @router.put("/students/{student_id}/change_memory_master/{memory_master_id}", response_model=Student, dependencies=[Depends(JWTBearer())], tags=["Admin"])
+# def change_memory_master(student_id: int, memory_master_id: int, db: Session = Depends(get_db)):
+#     response = students.change_memory_master(db, student_id, memory_master_id)
+#     if response is None:
+#         raise HTTPException(status_code=404, detail="Student or Memory Master not found")
+#     return response
 
