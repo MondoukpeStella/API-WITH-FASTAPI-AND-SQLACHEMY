@@ -39,7 +39,10 @@ def get_my_profile(db: Session = Depends(get_db),student_id: int = Depends(auth.
     return student
         
 @router.get("/students/", response_model=list[Student], dependencies=[Depends(JWTBearer())], tags=["Students"])
-def get_all_students(skip: int = 0, limit: int = 10, db: Session = Depends(get_db)):
+def get_all_students(skip: int = 0, limit: int = 10, db: Session = Depends(get_db),student_id: int = Depends(auth.get_current_user_id)):
+    user = students.get(db, student_id)
+    if user.is_admin == 0:
+        raise HTTPException(status_code=403, detail="Access forbidden: Only admins can view all students")
     response = students.get_all(db, skip=skip, limit=limit)
     return response
 
